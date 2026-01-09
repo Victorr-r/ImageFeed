@@ -1,1 +1,1 @@
-# PhotoFeed
+# ImageFeed
