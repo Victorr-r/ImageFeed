@@ -47,7 +47,7 @@
                                                     <state key="normal" image="like_button_on"/>
                                                 </button>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="27 августа 2022" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uaF-Re-seU">
-                                                    <rect key="frame" x="8" y="265.33333333333331" width="101.66666666666667" height="15.666666666666686"/>
+                                                    <rect key="frame" x="24.000000000000007" y="265.33333333333331" width="101.66666666666669" height="15.666666666666686"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
@@ -55,7 +55,7 @@
                                             </subviews>
                                             <color key="backgroundColor" name="LaunchBackgroundColor"/>
                                             <constraints>
-                                                <constraint firstItem="VG7-zm-nM3" firstAttribute="leading" secondItem="uaF-Re-seU" secondAttribute="leading" constant="8" id="4MA-om-Jwq"/>
+                                                <constraint firstItem="uaF-Re-seU" firstAttribute="leading" secondItem="VG7-zm-nM3" secondAttribute="leading" constant="8" id="6at-6F-QAR"/>
                                                 <constraint firstItem="VG7-zm-nM3" firstAttribute="leading" secondItem="yaw-u9-LS6" secondAttribute="leading" constant="16" id="961-1c-qPF"/>
                                                 <constraint firstItem="VG7-zm-nM3" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="uaF-Re-seU" secondAttribute="trailing" constant="8" id="BNH-Yc-Q6T"/>
                                                 <constraint firstItem="VG7-zm-nM3" firstAttribute="top" secondItem="yaw-u9-LS6" secondAttribute="top" constant="4" id="DCi-a9-zlZ"/>
