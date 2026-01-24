@@ -75,10 +75,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		C5AAF55A2F06A15300354FA3 = {
+		C53B4E492F13B03B003437E1 /* App */ = {
 			isa = PBXGroup;
 			children = (
 				C5AAF5652F06A15300354FA3 /* ImageFeed */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		C5AAF55A2F06A15300354FA3 = {
+			isa = PBXGroup;
+			children = (
+				C53B4E492F13B03B003437E1 /* App */,
 				C5AAF5642F06A15300354FA3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -273,7 +281,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M8DC2D893Q;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ImageFeed/Info.plist;
+				INFOPLIST_FILE = App/ImageFeed/Info.plist;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -306,7 +314,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M8DC2D893Q;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = ImageFeed/Info.plist;
+				INFOPLIST_FILE = App/ImageFeed/Info.plist;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
