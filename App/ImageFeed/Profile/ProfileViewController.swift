@@ -5,7 +5,7 @@ final class ProfileViewController: UIViewController {
 	
 	private let avatarImageView: UIImageView = {
 		let imageView = UIImageView()
-		imageView.image = UIImage(named: "profil")
+		imageView.image = UIImage(resource: .profil)
 		imageView.layer.cornerRadius = 35
 		imageView.clipsToBounds = true
 		imageView.translatesAutoresizingMaskIntoConstraints = false
