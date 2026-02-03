@@ -1,10 +1,19 @@
 import Foundation
 
+enum HTTPMethod: String {
+	case get = "GET"
+	case post = "POST"
+	case put = "PUT"
+	case delete = "DELETE"
+}
+
+
 final class OAuth2Service {
 	
 	// MARK: - Private Properties
 	static let shared = OAuth2Service()
 	private let urlSession = URLSession.shared
+	private let decoder = JSONDecoder()
 	private init() {}
 	
 	private struct OAuthTokenResponseBody: Codable {
@@ -22,21 +31,25 @@ final class OAuth2Service {
 			completion(.failure(NetworkError.invalidRequest))
 			return
 		}
-		let task = urlSession.data(for: request) { result in
+		let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
 			DispatchQueue.main.async {
-				switch result {
-				case .success(let data):
-					do {
-						let decoder = JSONDecoder()
-						let responseBody = try decoder.decode(OAuthTokenResponseBody.self, from: data)
-						completion(.success(responseBody.accessToken))
-					} catch {
-						print("[OAuth2Service]: Decoding error - \(error.localizedDescription)")
-						completion(.failure(NetworkError.decodingError(error)))
-					}
-				case .failure(let error):
+				guard let self = self else { return } // Захватываем self для обращения к decoder
+				
+				if let error = error {
 					print("[OAuth2Service]: Network error - \(error.localizedDescription)")
 					completion(.failure(error))
+					return
+				}
+				
+				guard let data = data else { return }
+				
+				do {
+					
+					let responseBody = try self.decoder.decode(OAuthTokenResponseBody.self, from: data)
+					completion(.success(responseBody.accessToken))
+				} catch {
+					print("[OAuth2Service]: Decoding error - \(error.localizedDescription)")
+					completion(.failure(NetworkError.decodingError(error)))
 				}
 			}
 		}
@@ -65,7 +78,7 @@ final class OAuth2Service {
 		}
 		
 		var request = URLRequest(url: url)
-		request.httpMethod = "POST"
+		request.httpMethod = HTTPMethod.post.rawValue
 		
 		return request
 	}
