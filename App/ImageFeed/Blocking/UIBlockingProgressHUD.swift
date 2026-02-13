@@ -1,8 +1,9 @@
 import UIKit
+import ProgressHUD
 
 final class UIBlockingProgressHUD {
 	private static var window: UIWindow? {
-		UIApplication.shared.connectedScenes
+		return UIApplication.shared.connectedScenes
 			.compactMap { $0 as? UIWindowScene }
 			.flatMap { $0.windows }
 			.first { $0.isKeyWindow }
@@ -12,21 +13,11 @@ final class UIBlockingProgressHUD {
 	
 	static func show() {
 		window?.isUserInteractionEnabled = false
-		
-		if indicator == nil {
-			let activityIndicator = UIActivityIndicatorView(style: .large)
-			activityIndicator.color = .systemGray // Используем системный цвет
-			activityIndicator.center = window?.center ?? .zero
-			indicator = activityIndicator
-			window?.addSubview(activityIndicator)
-		}
-		indicator?.startAnimating()
+		ProgressHUD.animate()
 	}
 	
 	static func dismiss() {
 		window?.isUserInteractionEnabled = true
-		indicator?.stopAnimating()
-		indicator?.removeFromSuperview()
-		indicator = nil
+		ProgressHUD.dismiss()
 	}
 }

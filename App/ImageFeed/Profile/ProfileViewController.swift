@@ -2,6 +2,8 @@ import UIKit
 
 final class ProfileViewController: UIViewController {
 	
+	private let profileService = ProfileService.shared
+	private let storage = OAuth2TokenStorage()
 	
 	private let avatarImageView: UIImageView = {
 		let imageView = UIImageView()
@@ -25,7 +27,7 @@ final class ProfileViewController: UIViewController {
 		let label = UILabel()
 		label.text = "@ekaterina_nov"
 		label.font = .systemFont(ofSize: 13, weight: .regular)
-		label.textColor = UIColor(red:174/255, green:175/255, blue:180/255, alpha:1.0)
+		label.textColor = .ypGray
 		label.translatesAutoresizingMaskIntoConstraints = false
 		return label
 	}()
@@ -43,7 +45,7 @@ final class ProfileViewController: UIViewController {
 		let button = UIButton(type: .custom)
 		let buttonImage = UIImage(named: "profil button")
 		button.setImage(buttonImage, for: .normal)
-		button.tintColor = UIColor(red: 245/255, green: 107/255, blue: 108/255, alpha: 1.0)
+		button.tintColor = .ypRed
 		button.translatesAutoresizingMaskIntoConstraints = false
 		return button
 	}()
@@ -52,15 +54,23 @@ final class ProfileViewController: UIViewController {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		view.backgroundColor = UIColor(red: 28/255, green: 28/255, blue: 28/255, alpha: 1.0)
-		
+		view.backgroundColor = .ypBlack
 		
 		setupHierarchy()
 		setupLayout()
 		setupActions()
+		
+		if let profile = ProfileService.shared.profile {
+			updateProfileDetails(profile: profile)
+		}
 	}
 	
 	// MARK: - Private Methods
+	private func updateProfileDetails(profile: Profile) {
+		nameLabel.text = profile.name
+		loginNameLabel.text = profile.loginName
+		descriptionLabel.text = profile.bio
+	}
 	
 	private func setupHierarchy() {
 		

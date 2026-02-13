@@ -95,8 +95,9 @@ extension WebViewViewController: WKNavigationDelegate {
 	private func code(from navigationAction: WKNavigationAction) -> String? {
 		if let url = navigationAction.request.url,
 		   let urlComponents = URLComponents(string: url.absoluteString),
-		   let items = urlComponents.queryItems,
-		   let codeItem = items.first(where: { $0.name == "code" }) {
+		   let codeItem = urlComponents.queryItems?.first(where: { $0.name == "code" }) {
+			
+			print("[WebView]: Код перехвачен: \(codeItem.value ?? "")")
 			return codeItem.value
 		}
 		return nil

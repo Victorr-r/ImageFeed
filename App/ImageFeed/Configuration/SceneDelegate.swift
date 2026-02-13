@@ -1,9 +1,3 @@
-//
-//  SceneDelegate.swift
-//  PhotoFeed
-//
-//  Created by Виктор Воробьев on 01.01.2026.
-//
 
 import UIKit
 

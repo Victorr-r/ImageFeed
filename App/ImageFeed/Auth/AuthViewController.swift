@@ -1,5 +1,6 @@
 import UIKit
 import OSLog
+import ProgressHUD
 
 protocol AuthViewControllerDelegate: AnyObject {
 	func didAuthenticate(_ vc: AuthViewController)
@@ -37,7 +38,7 @@ final class AuthViewController: UIViewController {
 		navigationController?.navigationBar.backIndicatorImage = UIImage(resource: .navBackButton)
 		navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(resource: .navBackButton)
 		navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
-		navigationItem.backBarButtonItem?.tintColor = UIColor(resource: .ypBlack)
+		navigationItem.backBarButtonItem?.tintColor = .ypBlack
 	}
 	
 	private func showErrorAlert() {
@@ -54,25 +55,28 @@ final class AuthViewController: UIViewController {
 // MARK: - WebViewViewControllerDelegate
 extension AuthViewController: WebViewViewControllerDelegate {
 	func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
+		
 		UIBlockingProgressHUD.show()
 		
-		oauth2Service.fetchOAuthToken(code: code) { [weak self, weak vc] result in
-			UIBlockingProgressHUD.dismiss()
+		vc.dismiss(animated: true) { [weak self] in
 			guard let self  else { return }
 			
-			switch result {
-			case .success(let token):
-				self.storage.token = token
-				vc?.dismiss(animated: true) { [weak self] in
-					guard let self = self else { return }
-					self.delegate?.didAuthenticate(self)
-				}
-				
-			case .failure(let error):
-				self.logger.error("[AuthViewController]: OAuth2 token request failed - \(error.localizedDescription)")
-				vc?.dismiss(animated: true) { [weak self] in
-					guard let self = self else { return }
-					self.showErrorAlert()
+			self.oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
+				DispatchQueue.main.async {
+					
+					guard let self else { return }
+					
+					UIBlockingProgressHUD.dismiss()
+					
+					switch result {
+					case .success(let token):
+						self.storage.token = token
+						self.delegate?.didAuthenticate(self)
+						
+					case .failure(let error):
+						print("[Auth]: Ошибка получения токена - \(error)")
+						self.showErrorAlert()
+					}
 				}
 			}
 		}
@@ -80,5 +84,5 @@ extension AuthViewController: WebViewViewControllerDelegate {
 	
 	func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
 		vc.dismiss(animated: true)
-	}
-}
+			}
+		}
