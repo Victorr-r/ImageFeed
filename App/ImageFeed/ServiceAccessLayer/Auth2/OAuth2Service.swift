@@ -1,6 +1,6 @@
-import Foundation
+@preconcurrency import Foundation
 
-struct OAuthTokenResponseBody: Codable ,Sendable {
+nonisolated struct OAuthTokenResponseBody: Codable {
 	let accessToken: String
 	enum CodingKeys: String, CodingKey {
 		case accessToken = "access_token"
@@ -25,12 +25,10 @@ final class OAuth2Service {
 	private var task: URLSessionTask?
 	private var lastCode: String?
 	private let urlSession = URLSession.shared
-	private let decoder = JSONDecoder()
 	
 	private init() {}
 	
 	// MARK: - Public Methods
-	
 	func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
 		assert(Thread.isMainThread)
 		
@@ -38,26 +36,23 @@ final class OAuth2Service {
 		
 		task?.cancel()
 		lastCode = code
-		
 		guard let request = makeOAuthTokenRequest(code: code) else {
 			completion(.failure(AuthServiceError.invalidRequest))
 			return
 		}
 		
-		let task = object(for: request) { [weak self] result in
-			DispatchQueue.main.async {
-				guard let self else { return }
+		let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
+			guard let self = self else { return }
+			self.task = nil
+			
+			switch result {
+			case .success(let responseBody):
+				completion(.success(responseBody.accessToken))
 				
-				self.task = nil
-				
-				switch result {
-				case .success(let responseBody):
-					completion(.success(responseBody.accessToken))
-					
-				case .failure(let error):
-					self.lastCode = nil
-					completion(.failure(error))
-				}
+			case .failure(let error):
+				print("[OAuth2Service]: AuthServiceError - \(error.localizedDescription)")
+				self.lastCode = nil
+				completion(.failure(error))
 			}
 		}
 		self.task = task
@@ -90,36 +85,3 @@ final class OAuth2Service {
 		return request
 	}
 }
-
-// MARK: - Network Client
-extension OAuth2Service {
-	private func object(
-		for request: URLRequest,
-		completion: @escaping (Result<OAuthTokenResponseBody, Error>) -> Void
-	) -> URLSessionTask {
-		return urlSession.dataTask(with: request) { data, response, error in
-			if let error = error {
-				
-				print("[OAuth2Service]: Network error - \(error.localizedDescription)")
-				
-				completion(.failure(error))
-				return
-			}
-			
-			if let httpResponse = response as? HTTPURLResponse {
-						   print("[OAuth2Service]: Server status code - \(httpResponse.statusCode)")
-					   }
-			
-			guard let data = data else {
-				return
-			}
-			do {
-				let body = try JSONDecoder().decode(OAuthTokenResponseBody.self, from: data)
-				completion(.success(body))
-			} catch {
-				completion(.failure(error))
-			}
-		}
-	}
-}
-

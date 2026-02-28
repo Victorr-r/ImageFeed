@@ -9,6 +9,9 @@ protocol WebViewViewControllerDelegate: AnyObject {
 
 final class WebViewViewController: UIViewController {
 	
+	// MARK: - Private Properties
+	private var estimatedProgressObservation: NSKeyValueObservation?
+	
 	// MARK: - IB Outlets
 	@IBOutlet private var webView: WKWebView!
 	@IBOutlet private var progressView: UIProgressView!
@@ -21,34 +24,13 @@ final class WebViewViewController: UIViewController {
 		super.viewDidLoad()
 		loadAuthView()
 		webView.navigationDelegate = self
-	}
-	
-	override func viewWillAppear(_ animated: Bool) {
-		super.viewWillAppear(animated)
-		webView.addObserver(
-			self,
-			forKeyPath: #keyPath(WKWebView.estimatedProgress),
-			options: .new,
-			context: nil
-		)
-		updateProgress()
-	}
-	
-	override func viewDidDisappear(_ animated: Bool) {
-		super.viewDidDisappear(animated)
-		webView.removeObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress))
-	}
-	
-	override func observeValue(
-		forKeyPath keyPath: String?,
-		of object: Any?,
-		change: [NSKeyValueChangeKey : Any]?,
-		context: UnsafeMutableRawPointer?
-	) {
-		if keyPath == #keyPath(WKWebView.estimatedProgress) {
-			updateProgress()
-		} else {
-			super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+		
+		estimatedProgressObservation = webView.observe(
+			\.estimatedProgress,
+			 options: [.new]
+		) { [weak self] _, _ in
+			guard let self = self else { return }
+			self.updateProgress()
 		}
 	}
 	

@@ -9,11 +9,11 @@ enum NetworkError: Error {
 }
 
 extension URLSession {
-	nonisolated func data(
+	func data(
 		for request: URLRequest,
-		completion: @escaping @Sendable (Result<Data, Error>) -> Void
+		completion: @escaping (Result<Data, Error>) -> Void
 	) -> URLSessionTask {
-		let fulfillCompletionOnTheMainThread: @Sendable (Result<Data, Error>) -> Void = { result in
+		let fulfillCompletionOnTheMainThread: (Result<Data, Error>) -> Void = { result in
 			DispatchQueue.main.async {
 				completion(result)
 			}
@@ -24,18 +24,42 @@ extension URLSession {
 				if 200 ..< 300 ~= statusCode {
 					fulfillCompletionOnTheMainThread(.success(data))
 				} else {
-					if let responseString = String(data: data, encoding: .utf8) {
-						print("❌ [URLSession]: Server Error Content: \(responseString)")
-					}
+					print("[dataTask]: NetworkError - код ошибки \(statusCode)")
 					fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
 				}
 			} else if let error = error {
+				print("[dataTask]: NetworkError - \(error.localizedDescription)")
 				fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
 			} else {
+				print("[dataTask]: NetworkError - urlSessionError")
 				fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
 			}
 		})
 		
+		return task
+	}
+	
+	func objectTask<T: Decodable>(
+		for request: URLRequest,
+		completion: @escaping (Result<T, Error>) -> Void
+	) -> URLSessionTask {
+		
+		let task = data(for: request) { (result: Result<Data, Error>) in
+			switch result {
+			case .success(let data):
+				do {
+					let decoder = JSONDecoder()
+					let response = try decoder.decode(T.self, from: data)
+					completion(.success(response))
+				} catch {
+					let dataString = String(data: data, encoding: .utf8) ?? ""
+					print("[objectTask]: Decoding error - \(error.localizedDescription), Данные: \(dataString)")
+					completion(.failure(NetworkError.decodingError(error)))
+				}
+			case .failure(let error):
+				completion(.failure(error))
+			}
+		}
 		return task
 	}
 }

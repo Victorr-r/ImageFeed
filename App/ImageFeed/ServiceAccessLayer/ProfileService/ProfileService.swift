@@ -20,6 +20,15 @@ struct Profile {
 	let name: String
 	let loginName: String
 	let bio: String?
+	
+	init(from result: ProfileResult) {
+		self.username = result.username
+		self.loginName = "@\(result.username)"
+		self.bio = result.bio
+		
+		let components = [result.firstName, result.lastName].compactMap { $0 }
+		self.name = components.joined(separator: " ")
+	}
 }
 
 // MARK: - ProfileService
@@ -28,63 +37,46 @@ final class ProfileService {
 	// MARK: - Properties
 	static let shared = ProfileService()
 	private(set) var profile: Profile?
-	private init() {}
-	
-	private var task: URLSessionDataTask?
+	private var task: URLSessionTask?
 	private let urlSession = URLSession.shared
 	
+	private init() {}
+	
 	// MARK: - Public Methods
-	func fetchProfile(_ token: String, completion: @escaping(Result<Profile, Error>) -> Void) {
+	func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
 		task?.cancel()
 		
 		guard let request = makeProfileRequest(token: token) else {
-			completion(.failure(URLError(.badURL)))
+			completion(.failure(NetworkError.invalidRequest))
 			return
 		}
 		
-		let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
-			DispatchQueue.main.async {
-				guard let self else { return }
-				self.task = nil
-				if let error = error {
-					completion(.failure(error))
-					return
-				}
-				guard let data = data else {
-					completion(.failure(NetworkError.urlSessionError))
-					return
-				}
-				do {
-					let profileResult = try JSONDecoder().decode(ProfileResult.self, from: data)
-					
-					let profile = Profile(
-						username: profileResult.username,
-						name: "\(profileResult.firstName ?? "") \(profileResult.lastName ?? "")".trimmingCharacters(in: .whitespaces),
-						loginName: "@\(profileResult.username)",
-						bio: profileResult.bio)
-					self.profile = profile
-					completion(.success(profile))
-				} catch {
-					completion(.failure(NetworkError.decodingError(error)))
-				}
-			}
-		}
+		let task = urlSession.objectTask(for: request) { [weak self] (result: Result<ProfileResult, Error>) in
+		guard let self else { return }
+			self.task = nil
+				
+				switch result {
+							case .success(let profileResult):
+								let profile = Profile(from: profileResult)
+								self.profile = profile
+								
+								completion(.success(profile))
+								
+							case .failure(let error):
+					print("[ProfileService]: ProfileError - \(error.localizedDescription)")
+								completion(.failure(error))
+							}
+						}
+		
 		self.task = task
 		task.resume()
 	}
 	
 	// MARK: - Private Methods
 	private func makeProfileRequest(token: String) -> URLRequest? {
-		guard let url = URL(string: "https://api.unsplash.com/me") else {
-			assertionFailure("Failed to create URL")
-			return nil
-		}
-		var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
-		
-		request.httpMethod = "GET"
+		guard let url = URL(string: "https://api.unsplash.com/me") else { return nil }
+		var request = URLRequest(url: url)
 		request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-		request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-		
 		return request
 	}
 }

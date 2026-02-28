@@ -1,9 +1,11 @@
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
 	
 	private let profileService = ProfileService.shared
-	private let storage = OAuth2TokenStorage()
+	private let storage = OAuth2TokenStorage.shared
+	private var profileImageServiceObserver: NSObjectProtocol?
 	
 	private let avatarImageView: UIImageView = {
 		let imageView = UIImageView()
@@ -56,6 +58,7 @@ final class ProfileViewController: UIViewController {
 		super.viewDidLoad()
 		view.backgroundColor = .ypBlack
 		
+		
 		setupHierarchy()
 		setupLayout()
 		setupActions()
@@ -63,6 +66,44 @@ final class ProfileViewController: UIViewController {
 		if let profile = ProfileService.shared.profile {
 			updateProfileDetails(profile: profile)
 		}
+		
+		profileImageServiceObserver = NotificationCenter.default
+			.addObserver(
+				forName: ProfileImageService.didChangeNotification,
+				object: nil,
+				queue: .main
+			) { [weak self] _ in
+				guard let self else { return }
+				self.updateAvatar()
+			}
+		updateAvatar()
+	}
+	deinit {
+		if let observer = profileImageServiceObserver {
+			NotificationCenter.default.removeObserver(observer)
+		}
+	}
+	
+	// MARK: - Notification Methods
+	private func updateAvatar() {
+		guard
+			let profileImageURL = ProfileImageService.shared.avatarURL,
+			let url = URL(string: profileImageURL)
+		else { return }
+		
+		let processor = RoundCornerImageProcessor(cornerRadius: 35)
+		
+		avatarImageView.kf.indicatorType = .activity
+		avatarImageView.kf.setImage(
+			with: url,
+			placeholder: UIImage(named: "profil"),
+			options: [
+				.processor(processor),
+				.transition(.fade(0.5)),
+				.scaleFactor(UIScreen.main.scale),
+				.cacheSerializer(FormatIndicatedCacheSerializer.png)
+			]
+		)
 	}
 	
 	// MARK: - Private Methods
@@ -108,6 +149,7 @@ final class ProfileViewController: UIViewController {
 		])
 	}
 	
+	// MARK: - Actions
 	private func setupActions() {
 		logoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
 	}

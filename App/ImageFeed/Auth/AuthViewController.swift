@@ -11,7 +11,7 @@ final class AuthViewController: UIViewController {
 	// MARK: - Private Properties
 	weak var delegate: AuthViewControllerDelegate?
 	private let oauth2Service = OAuth2Service.shared
-	private let storage = OAuth2TokenStorage()
+	private let storage = OAuth2TokenStorage.shared
 	private let showWebViewSegueIdentifier = "ShowWebView"
 	private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "ImageFeed", category: "Auth")
 	
@@ -58,24 +58,27 @@ extension AuthViewController: WebViewViewControllerDelegate {
 		
 		UIBlockingProgressHUD.show()
 		
-		vc.dismiss(animated: true) { [weak self] in
-			guard let self  else { return }
-			
-			self.oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
-				DispatchQueue.main.async {
+		self.oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
+			DispatchQueue.main.async {
+				guard let self else { return }
+				
+				UIBlockingProgressHUD.dismiss()
+				
+				switch result {
+				case .success(let token):
+					self.storage.token = token
+					if self.delegate == nil {
+					}
 					
-					guard let self else { return }
+					self.delegate?.didAuthenticate(self)
 					
-					UIBlockingProgressHUD.dismiss()
+					vc.dismiss(animated: true)
 					
-					switch result {
-					case .success(let token):
-						self.storage.token = token
-						self.delegate?.didAuthenticate(self)
-						
-					case .failure(let error):
-						print("[Auth]: Ошибка получения токена - \(error)")
-						self.showErrorAlert()
+				case .failure(let error):
+					print("[AuthViewController]: OAuth2Service Error - \(error.localizedDescription)")
+					
+					vc.dismiss(animated: true) { [weak self] in
+						self?.showErrorAlert()
 					}
 				}
 			}
