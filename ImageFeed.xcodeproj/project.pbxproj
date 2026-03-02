@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		C517C5952F2A5AB9002659C2 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C517C5942F2A5AB9002659C2 /* WebKit.framework */; };
+		C57621932F38803F008A8856 /* ProgressHUD in Frameworks */ = {isa = PBXBuildFile; productRef = C57621922F38803F008A8856 /* ProgressHUD */; };
+		C5E6E0B12F44D6CF00233C0B /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = C5E6E0B02F44D6CF00233C0B /* Kingfisher */; };
+		C5FF3B192F532B9200D40E1D /* SwiftKeychainWrapper in Frameworks */ = {isa = PBXBuildFile; productRef = C5FF3B182F532B9200D40E1D /* SwiftKeychainWrapper */; };
+		C5FF3B1B2F5331D300D40E1D /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5FF3B1A2F5331C300D40E1D /* TabBarController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,13 +36,14 @@
 		C5AAF5632F06A15300354FA3 /* ImageFeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageFeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5AAF57C2F06A15400354FA3 /* ImageFeedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageFeedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5AAF5862F06A15400354FA3 /* ImageFeedUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageFeedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C5FF3B1A2F5331C300D40E1D /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		C5AAF58E2F06A15400354FA3 /* Exceptions for "ImageFeed" folder in "ImageFeed" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				Configuration/Info.plist,
 			);
 			target = C5AAF5622F06A15300354FA3 /* ImageFeed */;
 		};
@@ -60,7 +65,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C5E6E0B12F44D6CF00233C0B /* Kingfisher in Frameworks */,
 				C517C5952F2A5AB9002659C2 /* WebKit.framework in Frameworks */,
+				C5FF3B192F532B9200D40E1D /* SwiftKeychainWrapper in Frameworks */,
+				C57621932F38803F008A8856 /* ProgressHUD in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +100,7 @@
 		C53B4E492F13B03B003437E1 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				C5FF3B1A2F5331C300D40E1D /* TabBarController.swift */,
 				C5AAF5652F06A15300354FA3 /* ImageFeed */,
 			);
 			path = App;
@@ -136,6 +145,9 @@
 			);
 			name = ImageFeed;
 			packageProductDependencies = (
+				C57621922F38803F008A8856 /* ProgressHUD */,
+				C5E6E0B02F44D6CF00233C0B /* Kingfisher */,
+				C5FF3B182F532B9200D40E1D /* SwiftKeychainWrapper */,
 			);
 			productName = PhotoFeed;
 			productReference = C5AAF5632F06A15300354FA3 /* ImageFeed.app */;
@@ -210,9 +222,16 @@
 			knownRegions = (
 				en,
 				Base,
+				"Base 2",
+				"base 2",
 			);
 			mainGroup = C5AAF55A2F06A15300354FA3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C57621912F387BEB008A8856 /* XCRemoteSwiftPackageReference "ProgressHUD" */,
+				C5E6E0AF2F44D6CF00233C0B /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				C5FF3B172F532B9200D40E1D /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C5AAF5642F06A15300354FA3 /* Products */;
 			projectDirPath = "";
@@ -254,6 +273,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C5FF3B1B2F5331D300D40E1D /* TabBarController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -296,9 +316,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M8DC2D893Q;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = App/ImageFeed/Info.plist;
+				INFOPLIST_FILE = App/ImageFeed/Configuration/Info.plist;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -306,7 +327,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Victor.PhotoFeed;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Victor.ImageFeed;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -329,9 +350,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M8DC2D893Q;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = App/ImageFeed/Info.plist;
+				INFOPLIST_FILE = App/ImageFeed/Configuration/Info.plist;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -339,7 +361,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Victor.PhotoFeed;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Victor.ImageFeed;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -598,6 +620,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C57621912F387BEB008A8856 /* XCRemoteSwiftPackageReference "ProgressHUD" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/relatedcode/ProgressHUD";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 15.0.1;
+			};
+		};
+		C5E6E0AF2F44D6CF00233C0B /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.6.2;
+			};
+		};
+		C5FF3B172F532B9200D40E1D /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jrendel/SwiftKeychainWrapper";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C57621922F38803F008A8856 /* ProgressHUD */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C57621912F387BEB008A8856 /* XCRemoteSwiftPackageReference "ProgressHUD" */;
+			productName = ProgressHUD;
+		};
+		C5E6E0B02F44D6CF00233C0B /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C5E6E0AF2F44D6CF00233C0B /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+		C5FF3B182F532B9200D40E1D /* SwiftKeychainWrapper */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C5FF3B172F532B9200D40E1D /* XCRemoteSwiftPackageReference "SwiftKeychainWrapper" */;
+			productName = SwiftKeychainWrapper;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C5AAF55B2F06A15300354FA3 /* Project object */;
 }
