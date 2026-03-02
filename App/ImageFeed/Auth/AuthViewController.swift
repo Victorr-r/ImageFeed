@@ -60,23 +60,19 @@ extension AuthViewController: WebViewViewControllerDelegate {
 		
 		self.oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
 			DispatchQueue.main.async {
-				guard let self else { return }
 				
 				UIBlockingProgressHUD.dismiss()
+				
+				guard let self else { return }
 				
 				switch result {
 				case .success(let token):
 					self.storage.token = token
-					if self.delegate == nil {
-					}
-					
 					self.delegate?.didAuthenticate(self)
 					
-					vc.dismiss(animated: true)
-					
 				case .failure(let error):
-					print("[AuthViewController]: OAuth2Service Error - \(error.localizedDescription)")
-					
+					self.logger.error("OAuth2Service Error - \(error.localizedDescription)")
+
 					vc.dismiss(animated: true) { [weak self] in
 						self?.showErrorAlert()
 					}
@@ -87,5 +83,5 @@ extension AuthViewController: WebViewViewControllerDelegate {
 	
 	func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
 		vc.dismiss(animated: true)
-			}
-		}
+	}
+}

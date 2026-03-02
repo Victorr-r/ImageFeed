@@ -7,13 +7,6 @@ nonisolated struct OAuthTokenResponseBody: Codable {
 	}
 }
 
-enum HTTPMethod: String {
-	case get = "GET"
-	case post = "POST"
-	case put = "PUT"
-	case delete = "DELETE"
-}
-
 enum AuthServiceError: Error {
 	case invalidRequest
 }
@@ -32,7 +25,7 @@ final class OAuth2Service {
 	func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
 		assert(Thread.isMainThread)
 		
-		if lastCode == code && task != nil { return }
+		guard lastCode == code else { return }
 		
 		task?.cancel()
 		lastCode = code

@@ -16,7 +16,7 @@ struct UserResult: Codable {
 // MARK: - ProfileImageService
 final class ProfileImageService {
 	
-	static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
+	static let didChangeNotification = Notification.Name("ProfileImageProviderDidChange")
 	static let shared = ProfileImageService()
 	private(set) var avatarURL: String?
 	
@@ -41,27 +41,27 @@ final class ProfileImageService {
 		}
 		
 		let task = urlSession.objectTask(for: request) { [weak self] (result: Result<UserResult, Error>) in
-				guard let self else { return }
-				self.task = nil
-				
+			guard let self else { return }
+			self.task = nil
+			
 			switch result {
-					 case .success(let userResult):
-						 let imageURL = userResult.profileImage.small
-						 self.avatarURL = imageURL
-						 
-						 completion(.success(imageURL))
-						 
-						 NotificationCenter.default.post(
-							 name: ProfileImageService.didChangeNotification,
-							 object: self,
-							 userInfo: ["URL": imageURL]
-						 )
-						 
-					 case .failure(let error):
+			case .success(let userResult):
+				let imageURL = userResult.profileImage.small
+				self.avatarURL = imageURL
+				
+				completion(.success(imageURL))
+				
+				NotificationCenter.default.post(
+					name: ProfileImageService.didChangeNotification,
+					object: self,
+					userInfo: ["URL": imageURL]
+				)
+				
+			case .failure(let error):
 				print("[ProfileImageService]: ImageError - \(error.localizedDescription)")
-						 completion(.failure(error))
-					 }
-				 }
+				completion(.failure(error))
+			}
+		}
 		self.task = task
 		task.resume()
 	}
@@ -71,7 +71,7 @@ final class ProfileImageService {
 		guard let url = URL(string: "https://api.unsplash.com/users/\(username)") else { return nil }
 		
 		var request = URLRequest(url: url)
-		request.httpMethod = "GET"
+		request.httpMethod = HTTPMethod.get.rawValue
 		request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 		return request
 	}
