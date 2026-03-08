@@ -19,6 +19,7 @@ final class SplashViewController: UIViewController {
 	// MARK: - Lifecycle
 	override func viewDidLoad() {
 		super.viewDidLoad()
+
 		view.backgroundColor = .ypBlack
 		setupUI()
 	}

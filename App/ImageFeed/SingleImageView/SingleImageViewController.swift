@@ -1,8 +1,10 @@
 import UIKit
+import Kingfisher
 
 final class SingleImageViewController : UIViewController {
 	
 	// MARK: - Properties
+	var fullImageURL: URL?
 	var image: UIImage? {
 		didSet {
 			guard isViewLoaded, let image = image else { return }
@@ -23,10 +25,14 @@ final class SingleImageViewController : UIViewController {
 		scrollView.delegate = self
 		scrollView.minimumZoomScale = 0.1
 		scrollView.maximumZoomScale = 1.25
-		guard let image else { return }
-		imageView.image = image
-		imageView.frame.size = image.size
-		rescaleAndCenterImageInScrollView(image: image)
+		if fullImageURL != nil {
+			downloadImage()
+		}
+		else if let image = image {
+			imageView.image = image
+			imageView.frame.size = image.size
+			rescaleAndCenterImageInScrollView(image: image)
+		}
 	}
 	
 	// MARK: - Actions
@@ -61,6 +67,41 @@ final class SingleImageViewController : UIViewController {
 		let x = (newContentSize.width - visibleRectSize.width) / 2
 		let y = (newContentSize.height - visibleRectSize.height) / 2
 		scrollView.setContentOffset(CGPoint(x: x, y: y), animated: false)
+	}
+	
+	private func downloadImage() {
+		guard let fullImageURL = fullImageURL else { return }
+		
+		UIBlockingProgressHUD.show()
+		
+		imageView.kf.setImage(with: fullImageURL) { [weak self] result in
+			UIBlockingProgressHUD.dismiss()
+			
+			guard let self else { return }
+			
+			switch result {
+			case .success(let imageResult):
+				self.image = imageResult.image
+			case .failure:
+				self.showError()
+			}
+		}
+	}
+	
+	private func showError() {
+		let alert = UIAlertController(
+			title: "Что-то пошло не так",
+			message: "Попробовать ещё раз?",
+			preferredStyle: .alert
+		)
+		
+		alert.addAction(UIAlertAction(title: "Не надо", style: .cancel))
+		
+		alert.addAction(UIAlertAction(title: "Повторить", style: .default) { [weak self] _ in
+			self?.downloadImage()
+		})
+		
+		present(alert, animated: true)
 	}
 }
 
