@@ -1,11 +1,24 @@
 
 import UIKit
 import CoreData
+import ProgressHUD
+import SwiftUI
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 	
+	func application(
+		_ application: UIApplication,
+		didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+	) -> Bool {
+		ProgressHUD.animationType = .activityIndicator
+		ProgressHUD.colorHUD = Color.white
+		ProgressHUD.colorAnimation = Color.black
+		return true
+	}
+	
 	// MARK: UISceneSession Lifecycle
+	
 	func application(_ application: UIApplication,  configurationForConnecting connectingSceneSession: UISceneSession,
 					 options: UIScene.ConnectionOptions
 	) -> UISceneConfiguration {
@@ -23,7 +36,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	// MARK: - Core Data stack
 	
 	lazy var persistentContainer: NSPersistentContainer = {
-		
 		let container = NSPersistentContainer(name: "ImageFeed")
 		container.loadPersistentStores(completionHandler: { (storeDescription, error) in
 			if let error = error as NSError? {
@@ -41,7 +53,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 			do {
 				try context.save()
 			} catch {
-				
 				let nserror = error as NSError
 				fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
 			}

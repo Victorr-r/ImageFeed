@@ -23,8 +23,8 @@ final class ImagesListCell: UITableViewCell {
 	// MARK: - Public Methods
 	func setIsLiked(_ isLiked: Bool) {
 		let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
-		likeButton.setImage(likeImage, for: .normal)
-	}
+			likeButton.setImage(likeImage, for: .normal)
+		}
 	
 	// MARK: -  Overrides
 	

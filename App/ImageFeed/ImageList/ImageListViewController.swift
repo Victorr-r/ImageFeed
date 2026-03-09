@@ -1,4 +1,3 @@
-
 import UIKit
 import Kingfisher
 
@@ -10,7 +9,7 @@ final class ImageListViewController: UIViewController {
 	
 	// MARK: - Private Properties
 	private let showSingleImageSegueIdentifier = "ShowSingleImage"
-	private let imagesListService = ImagesListService()
+	private let imagesListService = ImagesListService.shared
 	private var photos: [Photo] = []
 	private var imagesListServiceObserver: NSObjectProtocol?
 	private lazy var dateFormatter: DateFormatter = {
@@ -110,10 +109,7 @@ extension ImageListViewController {
 		let processor = DownsamplingImageProcessor(size: cell.cellImage.bounds.size)
 		
 		cell.cellImage.kf.indicatorType = .activity
-		cell.cellImage.kf.setImage(with: url, placeholder: placeholder, options: [.processor(processor)]) { [weak self] _ in
-			guard let self else { return }
-			self.tableView.reloadRows(at: [indexPath], with: .automatic)
-		}
+		cell.cellImage.kf.setImage(with: url, placeholder: placeholder, options: [.processor(processor)], completionHandler: nil)
 		
 		cell.dateLabel.text = photo.createdAt != nil ? dateFormatter.string(from: photo.createdAt!) : ""
 		let likeImage = photo.isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
@@ -155,7 +151,7 @@ extension ImageListViewController: ImagesListCellDelegate {
 		UIBlockingProgressHUD.show()
 		
 		imagesListService.changeLike(photoId: photo.id, isLike: !photo.isLiked) { [weak self] result in
-			guard let self = self else { return }
+			guard let self else { return }
 			
 			switch result {
 			case .success:

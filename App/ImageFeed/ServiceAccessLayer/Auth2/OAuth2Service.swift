@@ -2,9 +2,6 @@
 
 nonisolated struct OAuthTokenResponseBody: Codable {
 	let accessToken: String
-	enum CodingKeys: String, CodingKey {
-		case accessToken = "access_token"
-	}
 }
 
 enum AuthServiceError: Error {
@@ -25,7 +22,7 @@ final class OAuth2Service {
 	func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
 		assert(Thread.isMainThread)
 		
-		guard lastCode == code else { return }
+		if lastCode == code { return }
 		
 		task?.cancel()
 		lastCode = code
@@ -35,17 +32,19 @@ final class OAuth2Service {
 		}
 		
 		let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
-			guard let self = self else { return }
-			self.task = nil
-			
-			switch result {
-			case .success(let responseBody):
-				completion(.success(responseBody.accessToken))
+			DispatchQueue.main.async {
+				guard let self else { return }
+				self.task = nil
 				
-			case .failure(let error):
-				print("[OAuth2Service]: AuthServiceError - \(error.localizedDescription)")
-				self.lastCode = nil
-				completion(.failure(error))
+				switch result {
+				case .success(let responseBody):
+					completion(.success(responseBody.accessToken))
+					
+				case .failure(let error):
+					print("[OAuth2Service]: AuthServiceError - \(error.localizedDescription)")
+					self.lastCode = nil
+					completion(.failure(error))
+				}
 			}
 		}
 		self.task = task

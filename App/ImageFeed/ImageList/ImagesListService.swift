@@ -3,18 +3,22 @@ import CoreGraphics
 
 struct PhotoResult: Decodable {
 	let id: String
-	let width: Int
-	let height: Int
+	let width: Int?
+	let height: Int?
 	let createdAt: String?
 	let description: String?
-	let urls: UrlsResult
-	let likedByUser: Bool
+	let urls: UrlsResult?
+	let likedByUser: Bool?
 }
 
 struct UrlsResult: Decodable {
 	let thumb: String
 	let full: String
 	let regular: String
+}
+
+struct LikeUpdateResult: Decodable {
+	let photo: PhotoResult
 }
 
 struct Photo {
@@ -27,6 +31,7 @@ struct Photo {
 	let isLiked: Bool
 }
 
+
 final class ImagesListService {
 
 	// MARK: - Properties
@@ -35,6 +40,8 @@ final class ImagesListService {
 	private var lastLoadedPage: Int?
 	private var task: URLSessionTask?
 	private static let isoDateFormatter = ISO8601DateFormatter()
+	static let shared = ImagesListService()
+	private init() {}
 	
 	// MARK: - Public Methods
 	func fetchPhotosNextPage() {
@@ -67,12 +74,12 @@ final class ImagesListService {
 					let newPhotos = photosResult.map { result in
 						Photo(
 							id: result.id,
-							size: CGSize(width: result.width, height: result.height),
+							size: CGSize(width: result.width ?? 0, height: result.height ?? 0),
 							createdAt: ImagesListService.isoDateFormatter.date(from: result.createdAt ?? ""),
 							welcomeDescription: result.description,
-							thumbImageURL: result.urls.regular,
-							largeImageURL: result.urls.full,
-							isLiked: result.likedByUser
+							thumbImageURL: result.urls?.regular ?? "",
+							largeImageURL: result.urls?.full ?? "",
+							isLiked: result.likedByUser ?? false
 						)
 					}
 					
@@ -98,22 +105,25 @@ final class ImagesListService {
 		assert(Thread.isMainThread)
 		task?.cancel()
 		
-		guard let url = URL(string: "https://unsplash.com\(photoId)/like") else {
-			completion(.failure(NetworkError.invalidRequest))
-			return
-		}
+		let urlString = "https://api.unsplash.com/photos/\(photoId)/like"
+		
+			guard let url = URL(string: urlString) else {
+				completion(.failure(NetworkError.invalidRequest))
+				return
+			}
+		
 		var request = URLRequest(url: url)
 		request.httpMethod = isLike ? "POST" : "DELETE"
 		
 		if let token = OAuth2TokenStorage.shared.token {
 			request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 		}
-		let newTask = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<PhotoResult, Error>) in
+		let newTask = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<LikeUpdateResult, Error>) in
 			guard let self else { return }
 			self.task = nil
 			
 			switch result {
-			case .success(_):
+			case .success(let body):
 				if let index = self.photos.firstIndex(where: { $0.id == photoId }) {
 					let oldPhoto = self.photos[index]
 					let newPhoto = Photo(
@@ -123,7 +133,7 @@ final class ImagesListService {
 						welcomeDescription: oldPhoto.welcomeDescription,
 						thumbImageURL: oldPhoto.thumbImageURL,
 						largeImageURL: oldPhoto.largeImageURL,
-						isLiked: !oldPhoto.isLiked
+						isLiked: body.photo.likedByUser ?? isLike
 					)
 					self.photos = self.photos.withReplaced(itemAt: index, newValue: newPhoto)
 				}
@@ -153,6 +163,10 @@ final class ImagesListService {
 			request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 		}
 		return request
+	}
+	
+	func clear() {
+		photos = []
 	}
 }
 

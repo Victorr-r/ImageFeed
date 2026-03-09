@@ -44,7 +44,7 @@ final class ProfileService {
 	
 	// MARK: - Public Methods
 	func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
-		task?.cancel()
+		if task != nil { return } 
 		
 		guard let request = makeProfileRequest(token: token) else {
 			completion(.failure(NetworkError.invalidRequest))
@@ -78,5 +78,9 @@ final class ProfileService {
 		var request = URLRequest(url: url)
 		request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 		return request
+	}
+	
+	func clear() {
+		profile = nil
 	}
 }
