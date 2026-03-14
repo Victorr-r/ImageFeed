@@ -7,6 +7,12 @@ protocol ImagesListCellDelegate: AnyObject {
 
 final class ImagesListCell: UITableViewCell {
 	
+	// MARK: - Private Properties
+	private enum Constants {
+		static let likeButtonOn = "like_button_on"
+		static let likeButtonOff = "like_button_off"
+	}
+	
 	// MARK: - Public Properties
 	
 	static let reuseIdentifier = "ImagesListCell"
@@ -22,11 +28,18 @@ final class ImagesListCell: UITableViewCell {
 	
 	// MARK: - Public Methods
 	func setIsLiked(_ isLiked: Bool) {
-		let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
-			likeButton.setImage(likeImage, for: .normal)
-		}
+		let imageName = isLiked ? Constants.likeButtonOn : Constants.likeButtonOff
+		let likeImage = UIImage(named: imageName)
+		
+		likeButton.setImage(likeImage, for: .normal)
+	}
 	
 	// MARK: -  Overrides
+	
+	override func awakeFromNib() {
+		super.awakeFromNib()
+		selectionStyle = .none
+	}
 	
 	override func prepareForReuse() {
 		super.prepareForReuse()

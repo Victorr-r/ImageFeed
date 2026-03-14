@@ -3,6 +3,11 @@ import Kingfisher
 
 final class SingleImageViewController : UIViewController {
 	
+	// MARK: - Outlets
+	@IBOutlet private weak var scrollView: UIScrollView!
+	
+	@IBOutlet private weak var imageView: UIImageView!
+	
 	// MARK: - Properties
 	var fullImageURL: URL?
 	var image: UIImage? {
@@ -14,25 +19,11 @@ final class SingleImageViewController : UIViewController {
 		}
 	}
 	
-	// MARK: - Outlets
-	@IBOutlet private var scrollView: UIScrollView!
-	
-	@IBOutlet private weak var imageView: UIImageView!
-	
 	// MARK: - Lifecycle
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		scrollView.delegate = self
-		scrollView.minimumZoomScale = 0.1
-		scrollView.maximumZoomScale = 1.25
-		if fullImageURL != nil {
-			downloadImage()
-		}
-		else if let image = image {
-			imageView.image = image
-			imageView.frame.size = image.size
-			rescaleAndCenterImageInScrollView(image: image)
-		}
+		configureScrollView()
+		configureImage()
 	}
 	
 	// MARK: - Actions
@@ -52,6 +43,22 @@ final class SingleImageViewController : UIViewController {
 	}
 	
 	// MARK: - Private Methods
+	private func configureScrollView() {
+		scrollView.delegate = self
+		scrollView.minimumZoomScale = 0.1
+		scrollView.maximumZoomScale = 1.25
+	}
+	
+	private func configureImage() {
+		if fullImageURL != nil {
+			downloadImage()
+		} else if let image = image {
+			imageView.image = image
+			imageView.frame.size = image.size
+			rescaleAndCenterImageInScrollView(image: image)
+		}
+	}
+	
 	private func rescaleAndCenterImageInScrollView(image: UIImage) {
 		let minZoomScale = scrollView.minimumZoomScale
 		let maxZoomScale = scrollView.maximumZoomScale

@@ -23,28 +23,40 @@ final class ImageListViewController: UIViewController {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
-		
-		imagesListServiceObserver = NotificationCenter.default
-			.addObserver(
-				forName: ImagesListService.didChangeNotification,
-				object: nil,
-				queue: .main
-			) { [weak self] _ in
-				guard let self = self else { return }
-				self.updateTableViewAnimated()
+		configureTableView()
+				setupImagesListObserver()
+				loadPhotosIfNeeded()
 			}
-		
-		if imagesListService.photos.isEmpty {
-			imagesListService.fetchPhotosNextPage()
-		}
-	}
 	
 	deinit {
 		if let observer = imagesListServiceObserver {
 			NotificationCenter.default.removeObserver(observer)
 		}
 	}
+	
+	// MARK: - Private Methods
+	  
+	  private func configureTableView() {
+		  tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
+	  }
+	  
+	  private func setupImagesListObserver() {
+		  imagesListServiceObserver = NotificationCenter.default
+			  .addObserver(
+				  forName: ImagesListService.didChangeNotification,
+				  object: nil,
+				  queue: .main
+			  ) { [weak self] _ in
+				  guard let self = self else { return }
+				  self.updateTableViewAnimated()
+			  }
+	  }
+	  
+	  private func loadPhotosIfNeeded() {
+		  if imagesListService.photos.isEmpty {
+			  imagesListService.fetchPhotosNextPage()
+		  }
+	  }
 	
 	func updateTableViewAnimated() {
 		let oldCount = photos.count
@@ -62,6 +74,7 @@ final class ImageListViewController: UIViewController {
 		}
 	}
 	
+	// MARK: - Navigation
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		if segue.identifier == showSingleImageSegueIdentifier {
 			guard

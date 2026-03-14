@@ -1,47 +1,18 @@
 import Foundation
 import CoreGraphics
 
-struct PhotoResult: Decodable {
-	let id: String
-	let width: Int?
-	let height: Int?
-	let createdAt: String?
-	let description: String?
-	let urls: UrlsResult?
-	let likedByUser: Bool?
-}
-
-struct UrlsResult: Decodable {
-	let thumb: String
-	let full: String
-	let regular: String
-}
-
-struct LikeUpdateResult: Decodable {
-	let photo: PhotoResult
-}
-
-struct Photo {
-	let id: String
-	let size: CGSize
-	let createdAt: Date?
-	let welcomeDescription: String?
-	let thumbImageURL: String
-	let largeImageURL: String
-	let isLiked: Bool
-}
-
-
 final class ImagesListService {
 	
 	// MARK: - Properties
 	static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
+	static let shared = ImagesListService()
+	
 	private(set) var photos: [Photo] = []
 	private var lastLoadedPage: Int?
 	private var task: URLSessionTask?
 	private var likeTask: URLSessionTask?
 	private static let isoDateFormatter = ISO8601DateFormatter()
-	static let shared = ImagesListService()
+	
 	private init() {}
 	
 	// MARK: - Public Methods
@@ -174,14 +145,5 @@ final class ImagesListService {
 			request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 		}
 		return request
-	}
-}
-
-// MARK: - Extensions
-extension Array {
-	func withReplaced(itemAt index: Int, newValue: Element) -> [Element] {
-		var array = self
-		array[index] = newValue
-		return array
 	}
 }
