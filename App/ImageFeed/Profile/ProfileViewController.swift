@@ -155,6 +155,36 @@ final class ProfileViewController: UIViewController {
 	}
 	
 	@objc private func didTapLogoutButton() {
-		print("Нажата кнопка выхода")
+		let alert = UIAlertController(
+			title: "Пока, пока!",
+			message: "Уверены, что хотите выйти?",
+			preferredStyle: .alert
+		)
+		
+		let yesAction = UIAlertAction(title: "Да", style: .destructive) { [weak self] _ in
+			guard let self else { return }
+			self.logout()
+		}
+		
+		let noAction = UIAlertAction(title: "Нет", style: .default)
+		
+		alert.addAction(yesAction)
+		alert.addAction(noAction)
+		
+		present(alert, animated: true)
+	}
+	
+	private func logout() {
+		ProfileLogoutService.shared.logout()
+		
+		guard let window = UIApplication.shared.connectedScenes
+			.compactMap({ $0 as? UIWindowScene })
+			.flatMap({ $0.windows })
+			.first(where: { $0.isKeyWindow }) else {
+			return
+		}
+		
+		window.rootViewController = SplashViewController()
+		window.makeKeyAndVisible()
 	}
 }

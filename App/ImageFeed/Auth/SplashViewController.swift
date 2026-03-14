@@ -7,7 +7,7 @@ final class SplashViewController: UIViewController {
 	private let storage = OAuth2TokenStorage.shared
 	private let profileService = ProfileService.shared
 	private var isStartedAuth = false
-	
+	private var isFetchingProfile = false
 	private let splashImageView: UIImageView = {
 		let imageView = UIImageView()
 		imageView.image = UIImage(resource: .splashScreenLogo)
@@ -19,12 +19,15 @@ final class SplashViewController: UIViewController {
 	// MARK: - Lifecycle
 	override func viewDidLoad() {
 		super.viewDidLoad()
+
 		view.backgroundColor = .ypBlack
 		setupUI()
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
+		
+		if isFetchingProfile { return }
 		
 		if let token = storage.token {
 			fetchProfile(token)
@@ -87,10 +90,14 @@ extension SplashViewController {
 // MARK: - Business Logic
 private extension SplashViewController {
 	func fetchProfile(_ token: String) {
+		isFetchingProfile = true
 		UIBlockingProgressHUD.show()
 		
 		profileService.fetchProfile(token) { [weak self] result in
 			guard let self else { return }
+			
+			self.isFetchingProfile = false
+			UIBlockingProgressHUD.dismiss()
 			
 			switch result {
 			case .success(let profile):
@@ -99,7 +106,7 @@ private extension SplashViewController {
 				self.switchToTabBarController()
 				
 			case .failure(let error):
-				UIBlockingProgressHUD.dismiss()
+				
 				print("[SplashViewController]: ProfileService Error - \(error.localizedDescription)")
 				self.showErrorAlert()
 				

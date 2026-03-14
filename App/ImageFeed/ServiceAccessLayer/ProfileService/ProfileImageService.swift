@@ -4,10 +4,6 @@ import Foundation
 struct UserResult: Codable {
 	let profileImage: ProfileImage
 	
-	enum CodingKeys: String, CodingKey {
-		case profileImage = "profile_image"
-	}
-	
 	struct ProfileImage: Codable {
 		let small: String
 	}
@@ -74,5 +70,9 @@ final class ProfileImageService {
 		request.httpMethod = HTTPMethod.get.rawValue
 		request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 		return request
+	}
+	
+	func clear() {
+		avatarURL = nil
 	}
 }
