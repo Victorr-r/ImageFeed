@@ -33,12 +33,13 @@ struct Photo {
 
 
 final class ImagesListService {
-
+	
 	// MARK: - Properties
 	static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
 	private(set) var photos: [Photo] = []
 	private var lastLoadedPage: Int?
 	private var task: URLSessionTask?
+	private var likeTask: URLSessionTask?
 	private static let isoDateFormatter = ISO8601DateFormatter()
 	static let shared = ImagesListService()
 	private init() {}
@@ -59,7 +60,7 @@ final class ImagesListService {
 				defer { self.task = nil}
 				
 				if let error = error {
-					print("Сетевая ошибка: \(error)")
+					print("[ImagesListService.fetchPhotosNextPage]: Network-Error - \(error), Page: \(nextPage)")
 					return
 				}
 				
@@ -70,7 +71,6 @@ final class ImagesListService {
 					decoder.keyDecodingStrategy = .convertFromSnakeCase
 					
 					let photosResult = try decoder.decode([PhotoResult].self, from: data)
-					
 					let newPhotos = photosResult.map { result in
 						Photo(
 							id: result.id,
@@ -92,7 +92,7 @@ final class ImagesListService {
 					if let responseString = String(data: data, encoding: .utf8) {
 						print("ОТВЕТ СЕРВЕРА: \(responseString)")
 					}
-					print("Ошибка декодирования: \(error)")
+					print("[ImagesListService.fetchPhotosNextPage]: Decoding-Error - \(error), Data: \(String(data: data, encoding: .utf8) ?? "")")
 				}
 			}
 		}
@@ -103,14 +103,13 @@ final class ImagesListService {
 	
 	func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
 		assert(Thread.isMainThread)
-		task?.cancel()
+		likeTask?.cancel()
 		
 		let urlString = "https://api.unsplash.com/photos/\(photoId)/like"
-		
-			guard let url = URL(string: urlString) else {
-				completion(.failure(NetworkError.invalidRequest))
-				return
-			}
+		guard let url = URL(string: urlString) else {
+			completion(.failure(NetworkError.invalidRequest))
+			return
+		}
 		
 		var request = URLRequest(url: url)
 		request.httpMethod = isLike ? "POST" : "DELETE"
@@ -119,32 +118,44 @@ final class ImagesListService {
 			request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 		}
 		let newTask = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<LikeUpdateResult, Error>) in
-			guard let self else { return }
-			self.task = nil
-			
-			switch result {
-			case .success(let body):
-				if let index = self.photos.firstIndex(where: { $0.id == photoId }) {
-					let oldPhoto = self.photos[index]
-					let newPhoto = Photo(
-						id: oldPhoto.id,
-						size: oldPhoto.size,
-						createdAt: oldPhoto.createdAt,
-						welcomeDescription: oldPhoto.welcomeDescription,
-						thumbImageURL: oldPhoto.thumbImageURL,
-						largeImageURL: oldPhoto.largeImageURL,
-						isLiked: body.photo.likedByUser ?? isLike
-					)
-					self.photos = self.photos.withReplaced(itemAt: index, newValue: newPhoto)
-				}
-				completion(.success(()))
+			DispatchQueue.main.async {
+				guard let self else { return }
+				self.likeTask = nil
 				
-			case .failure(let error):
-				completion(.failure(error))
+				switch result {
+				case .success(let body):
+					if let index = self.photos.firstIndex(where: { $0.id == photoId }) {
+						let oldPhoto = self.photos[index]
+						let newPhoto = Photo(
+							id: oldPhoto.id,
+							size: oldPhoto.size,
+							createdAt: oldPhoto.createdAt,
+							welcomeDescription: oldPhoto.welcomeDescription,
+							thumbImageURL: oldPhoto.thumbImageURL,
+							largeImageURL: oldPhoto.largeImageURL,
+							isLiked: body.photo.likedByUser ?? isLike
+						)
+						self.photos = self.photos.withReplaced(itemAt: index, newValue: newPhoto)
+					}
+					completion(.success(()))
+					
+				case .failure(let error):
+					print("[ImagesListService.changeLike]: Network-Error - \(error), PhotoID: \(photoId)")
+					completion(.failure(error))
+				}
 			}
 		}
-		self.task = newTask
+		self.likeTask = newTask
 		newTask.resume()
+	}
+	
+	func clear() {
+		photos = []
+		lastLoadedPage = nil
+		task?.cancel()
+		task = nil
+		likeTask?.cancel()
+		likeTask = nil
 	}
 	
 	// MARK: - Private Methods
@@ -163,10 +174,6 @@ final class ImagesListService {
 			request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 		}
 		return request
-	}
-	
-	func clear() {
-		photos = []
 	}
 }
 

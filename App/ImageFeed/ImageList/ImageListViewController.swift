@@ -104,14 +104,20 @@ extension ImageListViewController {
 		let photo = photos[indexPath.row]
 		guard let url = URL(string: photo.thumbImageURL) else { return }
 		
-		let placeholder = UIImage(named: "stub")
+		cell.cellImage.kf.cancelDownloadTask()
 		
+		let placeholder = UIImage(named: "stub")
 		let processor = DownsamplingImageProcessor(size: cell.cellImage.bounds.size)
 		
 		cell.cellImage.kf.indicatorType = .activity
 		cell.cellImage.kf.setImage(with: url, placeholder: placeholder, options: [.processor(processor)], completionHandler: nil)
 		
-		cell.dateLabel.text = photo.createdAt != nil ? dateFormatter.string(from: photo.createdAt!) : ""
+		if let date = photo.createdAt {
+			cell.dateLabel.text = dateFormatter.string(from: date)
+		} else {
+			cell.dateLabel.text = ""
+		}
+		
 		let likeImage = photo.isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
 		cell.likeButton.setImage(likeImage, for: .normal)
 	}
