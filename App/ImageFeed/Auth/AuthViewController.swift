@@ -18,7 +18,7 @@ final class AuthViewController: UIViewController {
 	// MARK: - Overrides Methods
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		view.backgroundColor = .ypBlack 
+		view.backgroundColor = .ypBlack
 		configureBackButton()
 	}
 	
@@ -28,6 +28,12 @@ final class AuthViewController: UIViewController {
 				assertionFailure("Failed to prepare for \(showWebViewSegueIdentifier)")
 				return
 			}
+			
+			let authHelper = AuthHelper()
+			
+			let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+			webViewViewController.presenter = webViewPresenter
+			webViewPresenter.view = webViewViewController
 			webViewViewController.delegate = self
 		} else {
 			super.prepare(for: segue, sender: sender)
@@ -75,15 +81,15 @@ extension AuthViewController: WebViewViewControllerDelegate {
 						
 					case .failure(let error):
 						self.logger.error("OAuth2Service Error - \(error.localizedDescription)")
-							self.showErrorAlert()
-						}
+						self.showErrorAlert()
 					}
 				}
 			}
 		}
-		
-		func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
-			vc.dismiss(animated: true)
-		}
 	}
+	
+	func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
+		vc.dismiss(animated: true)
+	}
+}
 
