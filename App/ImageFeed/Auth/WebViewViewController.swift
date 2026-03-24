@@ -49,6 +49,11 @@ final class WebViewViewController: UIViewController & WebViewViewControllerProto
 		progressView.isHidden = isHidden
 	}
 	
+	func configure(_ presenter: WebViewPresenterProtocol) {
+		self.presenter = presenter
+		self.presenter?.view = self
+	}
+	
 	// MARK: - Private Methods
 	private func setupProgressObservation() {
 		estimatedProgressObservation = webView.observe(

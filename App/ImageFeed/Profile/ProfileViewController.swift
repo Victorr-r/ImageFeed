@@ -1,11 +1,26 @@
 import UIKit
 import Kingfisher
 
-final class ProfileViewController: UIViewController {
+// MARK: - Protocols
+
+protocol ProfilePresenterProtocol: AnyObject {
+	var view: ProfileViewControllerProtocol? { get set }
+	func viewDidLoad()
+	func logOut()
+}
+
+protocol ProfileViewControllerProtocol: AnyObject {
+	func updateProfileDetails(name: String, login: String, bio: String?)
+	func updateAvatar(url: URL)
+}
+
+// MARK: - ProfileViewController
+
+final class ProfileViewController: UIViewController, ProfileViewControllerProtocol {
 	
-	private let profileService = ProfileService.shared
-	private let storage = OAuth2TokenStorage.shared
-	private var profileImageServiceObserver: NSObjectProtocol?
+	// MARK: - Private Properties
+	
+	private var presenter: ProfilePresenterProtocol?
 	
 	private let avatarImageView: UIImageView = {
 		let imageView = UIImageView()
@@ -58,73 +73,51 @@ final class ProfileViewController: UIViewController {
 		super.viewDidLoad()
 		view.backgroundColor = .ypBlack
 		
-		
 		setupHierarchy()
 		setupLayout()
 		setupActions()
 		
-		if let profile = ProfileService.shared.profile {
-			updateProfileDetails(profile: profile)
-		}
-		
-		profileImageServiceObserver = NotificationCenter.default
-			.addObserver(
-				forName: ProfileImageService.didChangeNotification,
-				object: nil,
-				queue: .main
-			) { [weak self] _ in
-				guard let self else { return }
-				self.updateAvatar()
-			}
-		updateAvatar()
-	}
-	deinit {
-		if let observer = profileImageServiceObserver {
-			NotificationCenter.default.removeObserver(observer)
-		}
+		presenter?.viewDidLoad()
 	}
 	
-	// MARK: - Notification Methods
-	private func updateAvatar() {
-		guard
-			let profileImageURL = ProfileImageService.shared.avatarURL,
-			let url = URL(string: profileImageURL)
-		else { return }
-		
+	// MARK: - Public Methods
+	
+	func configure(_ presenter: ProfilePresenterProtocol) {
+		self.presenter = presenter
+		self.presenter?.view = self
+	}
+	
+	// MARK: - ProfileViewControllerProtocol
+	
+	func updateProfileDetails(name: String, login: String, bio: String?) {
+		nameLabel.text = name
+		loginNameLabel.text = login
+		descriptionLabel.text = bio
+	}
+	
+	func updateAvatar(url: URL) {
 		let processor = RoundCornerImageProcessor(cornerRadius: 35)
-		
 		avatarImageView.kf.indicatorType = .activity
 		avatarImageView.kf.setImage(
 			with: url,
 			placeholder: UIImage(named: "profil"),
 			options: [
 				.processor(processor),
-				.transition(.fade(0.5)),
-				.scaleFactor(UIScreen.main.scale),
-				.cacheSerializer(FormatIndicatedCacheSerializer.png)
+				.transition(.fade(0.5))
 			]
 		)
 	}
 	
 	// MARK: - Private Methods
-	private func updateProfileDetails(profile: Profile) {
-		nameLabel.text = profile.name
-		loginNameLabel.text = profile.loginName
-		descriptionLabel.text = profile.bio
-	}
 	
 	private func setupHierarchy() {
-		
-		view.addSubview(avatarImageView)
-		view.addSubview(nameLabel)
-		view.addSubview(loginNameLabel)
-		view.addSubview(descriptionLabel)
-		view.addSubview(logoutButton)
+		[avatarImageView, nameLabel, loginNameLabel, descriptionLabel, logoutButton].forEach {
+			view.addSubview($0)
+		}
 	}
 	
 	private func setupLayout() {
 		NSLayoutConstraint.activate([
-			
 			avatarImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32),
 			avatarImageView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
 			avatarImageView.widthAnchor.constraint(equalToConstant: 70),
@@ -149,7 +142,17 @@ final class ProfileViewController: UIViewController {
 		])
 	}
 	
+	private func logout() {
+		guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+			  let window = windowScene.windows.first(where: { $0.isKeyWindow }) else {
+			return
+		}
+		window.rootViewController = SplashViewController()
+		window.makeKeyAndVisible()
+	}
+	
 	// MARK: - Actions
+	
 	private func setupActions() {
 		logoutButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
 	}
@@ -163,28 +166,12 @@ final class ProfileViewController: UIViewController {
 		
 		let yesAction = UIAlertAction(title: "Да", style: .destructive) { [weak self] _ in
 			guard let self else { return }
+			self.presenter?.logOut()
 			self.logout()
 		}
 		
-		let noAction = UIAlertAction(title: "Нет", style: .default)
-		
 		alert.addAction(yesAction)
-		alert.addAction(noAction)
-		
+		alert.addAction(UIAlertAction(title: "Нет", style: .default))
 		present(alert, animated: true)
-	}
-	
-	private func logout() {
-		ProfileLogoutService.shared.logout()
-		
-		guard let window = UIApplication.shared.connectedScenes
-			.compactMap({ $0 as? UIWindowScene })
-			.flatMap({ $0.windows })
-			.first(where: { $0.isKeyWindow }) else {
-			return
-		}
-		
-		window.rootViewController = SplashViewController()
-		window.makeKeyAndVisible()
 	}
 }
