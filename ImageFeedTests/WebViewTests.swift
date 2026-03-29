@@ -16,9 +16,9 @@ final class WebViewTests: XCTestCase {
 		XCTAssertTrue(presenter.viewDidLoadCalled)
 	}
 	
-	func testPresenterCallsLoadRequest() {
+	func testPresenterCallsLoadRequest() async {
 		let viewController = WebViewViewControllerSpy()
-		let authHelper = AuthHelper()
+		let authHelper = await MainActor.run {AuthHelper()}
 		let presenter = WebViewPresenter(authHelper: authHelper)
 		
 		viewController.presenter = presenter
@@ -29,8 +29,8 @@ final class WebViewTests: XCTestCase {
 		XCTAssertTrue(viewController.loadCalled)
 	}
 	
-	func testProgressVisibleWhenLessThanOne() {
-		let authHelper = AuthHelper()
+	func testProgressVisibleWhenLessThanOne() async {
+		let authHelper = await MainActor.run { AuthHelper()}
 		let presenter = WebViewPresenter(authHelper: authHelper)
 		let progress: Float = 0.6
 		
@@ -39,8 +39,8 @@ final class WebViewTests: XCTestCase {
 		XCTAssertFalse(shouldHideProgress)
 	}
 	
-	func testProgressHiddenWhenOne() {
-		let authHelper = AuthHelper()
+	func testProgressHiddenWhenOne() async {
+		let authHelper = await MainActor.run { AuthHelper()}
 		let presenter = WebViewPresenter(authHelper: authHelper)
 		let progress: Float = 1.0
 		
@@ -49,16 +49,10 @@ final class WebViewTests: XCTestCase {
 		XCTAssertTrue(shouldHideProgress)
 	}
 	
-	func testAuthHelperAuthURL() {
+	func testAuthHelperAuthURL() async {
 		
-		let configuration = AuthConfiguration(
-			   accessKey: "test_key",
-			   secretKey: "test_secret",
-			   redirectURI: "test_uri",
-			   accessScope: "test_scope",
-			   authURLString: "https://unsplash.com",
-			   defaultBaseURLString: "https://api.unsplash.com")
-		let authHelper = AuthHelper(configuration: configuration)
+		let configuration = AuthConfiguration.standard
+		let authHelper = await MainActor.run { AuthHelper(configuration: configuration)}
 		
 		let url = authHelper.authURL()
 		
@@ -74,11 +68,11 @@ final class WebViewTests: XCTestCase {
 		XCTAssertTrue(urlString.contains(configuration.accessScope))
 	}
 	
-	func testCodeFromURL() {
+	func testCodeFromURL() async {
 		var urlComponents = URLComponents(string: "https://unsplash.com/oauth/authorize/native")!
 		urlComponents.queryItems = [URLQueryItem(name: "code", value: "test code")]
 		let url = urlComponents.url!
-		let authHelper = AuthHelper()
+		let authHelper = await MainActor.run { AuthHelper()}
 		
 		let code = authHelper.code(from: url)
 		

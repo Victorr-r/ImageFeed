@@ -8,7 +8,7 @@ protocol ImagesListCellDelegate: AnyObject {
 final class ImagesListCell: UITableViewCell {
 	
 	// MARK: - Private Properties
-	private enum Constants {
+	private enum LikeButtons {
 		static let likeButtonOn = "like_button_on"
 		static let likeButtonOff = "like_button_off"
 	}
@@ -28,10 +28,11 @@ final class ImagesListCell: UITableViewCell {
 	
 	// MARK: - Public Methods
 	func setIsLiked(_ isLiked: Bool) {
-		let imageName = isLiked ? Constants.likeButtonOn : Constants.likeButtonOff
+		let imageName = isLiked ? LikeButtons.likeButtonOn : LikeButtons.likeButtonOff
 		let likeImage = UIImage(named: imageName)
 		
 		likeButton.setImage(likeImage, for: .normal)
+		likeButton.accessibilityIdentifier = isLiked ? "like button on" : "like button off"
 	}
 	
 	// MARK: -  Overrides

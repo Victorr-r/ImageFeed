@@ -116,8 +116,19 @@ extension ImageListViewController {
 // MARK: - UITableViewDelegate
 extension ImageListViewController: UITableViewDelegate {
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-		performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
-	}
+		let storyboard = UIStoryboard(name: "Main", bundle: .main)
+			guard let viewController = storyboard.instantiateViewController(
+				withIdentifier: "SingleImageViewController"
+			) as? SingleImageViewController else { return }
+			
+		let photo = ImagesListService.shared.photos[indexPath.row]
+			guard let imageURL = URL(string: photo.largeImageURL) else { return }
+			
+			viewController.fullImageURL = imageURL
+			
+			viewController.modalPresentationStyle = .fullScreen
+			present(viewController, animated: true)
+		}
 	
 	func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
 		return presenter?.getCellHeight(for: indexPath, tableViewWidth: tableView.bounds.width) ?? 0

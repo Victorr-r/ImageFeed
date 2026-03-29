@@ -77,6 +77,10 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
 		setupLayout()
 		setupActions()
 		
+		nameLabel.accessibilityIdentifier = "Name Label"
+		loginNameLabel.accessibilityIdentifier = "Login Label"
+		logoutButton.accessibilityIdentifier = "logout button"
+		
 		presenter?.viewDidLoad()
 	}
 	

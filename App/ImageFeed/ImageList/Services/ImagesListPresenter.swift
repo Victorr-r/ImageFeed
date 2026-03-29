@@ -34,7 +34,7 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
 		view?.showLoading()
 		
 		imagesListService.changeLike(photoId: photo.id, isLike: !photo.isLiked) { [weak self] result in
-			guard let self = self else { return }
+			guard let self else { return }
 			
 			self.view?.hideLoading()
 			

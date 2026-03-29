@@ -7,7 +7,7 @@ final class SingleImageViewController : UIViewController {
 	@IBOutlet private weak var scrollView: UIScrollView!
 	
 	@IBOutlet private weak var imageView: UIImageView!
-	
+		
 	// MARK: - Properties
 	var fullImageURL: URL?
 	var image: UIImage? {
@@ -22,6 +22,7 @@ final class SingleImageViewController : UIViewController {
 	// MARK: - Lifecycle
 	override func viewDidLoad() {
 		super.viewDidLoad()
+		imageView.accessibilityIdentifier = "Full Image"
 		configureScrollView()
 		configureImage()
 	}
@@ -50,8 +51,11 @@ final class SingleImageViewController : UIViewController {
 	}
 	
 	private func configureImage() {
-		if fullImageURL != nil {
-			downloadImage()
+		guard let imageView = imageView else {
+			print("ОШИБКА: imageView не привязан в Storyboard!")
+			return
+		}
+		if fullImageURL != nil { 			   downloadImage()
 		} else if let image = image {
 			imageView.image = image
 			imageView.frame.size = image.size

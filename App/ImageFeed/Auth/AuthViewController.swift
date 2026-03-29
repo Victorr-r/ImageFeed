@@ -8,6 +8,7 @@ protocol AuthViewControllerDelegate: AnyObject {
 
 final class AuthViewController: UIViewController {
 	
+	
 	// MARK: - Private Properties
 	weak var delegate: AuthViewControllerDelegate?
 	private let oauth2Service = OAuth2Service.shared
@@ -20,6 +21,7 @@ final class AuthViewController: UIViewController {
 		super.viewDidLoad()
 		view.backgroundColor = .ypBlack
 		configureBackButton()
+		
 	}
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -61,34 +63,37 @@ final class AuthViewController: UIViewController {
 // MARK: - WebViewViewControllerDelegate
 extension AuthViewController: WebViewViewControllerDelegate {
 	func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-		vc.dismiss(animated: true) { [weak self] in
-			guard let self else { return }
-			
-			UIBlockingProgressHUD.show()
-			
-			self.oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
-				DispatchQueue.main.async {
-					
-					UIBlockingProgressHUD.dismiss()
-					
-					guard let self else { return }
-					
-					switch result {
-					case .success(let token):
-						self.storage.token = token
+		
+		UIBlockingProgressHUD.show()
+		
+		self.oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
+			DispatchQueue.main.async {
+				
+				UIBlockingProgressHUD.dismiss()
+				
+				guard let self else { return }
+				
+				switch result {
+				case .success(let token):
+					self.storage.token = token
+					print("DEBUG: Токен получен и сохранен, уведомляю делегата")
+					vc.dismiss(animated: true) { [weak self] in
+						guard let self else { return }
 						self.delegate?.didAuthenticate(self)
-						
-					case .failure(let error):
-						self.logger.error("OAuth2Service Error - \(error.localizedDescription)")
-						self.showErrorAlert()
+					}
+					
+				case .failure(let error):
+					self.logger.error("OAuth2Service Error - \(error.localizedDescription)")
+					vc.dismiss(animated: true) { [weak self] in
+						self?.showErrorAlert()
 					}
 				}
 			}
 		}
 	}
-	
-	func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
-		vc.dismiss(animated: true)
+		
+		func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
+			vc.dismiss(animated: true)
+		}
 	}
-}
-
+	
