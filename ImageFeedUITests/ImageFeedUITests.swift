@@ -22,7 +22,7 @@ class Image_FeedUITests: XCTestCase {
 		let loginTextField = webView.descendants(matching: .textField).firstMatch
 		XCTAssertTrue(loginTextField.waitForExistence(timeout: 20), "Поле логина не появилось")
 		loginTextField.tap()
-		loginTextField.typeText("")
+		loginTextField.typeText("viktorrr398@gmail.com")
 		
 		if app.toolbars.buttons["Done"].exists {
 			app.toolbars.buttons["Done"].tap()
@@ -35,7 +35,7 @@ class Image_FeedUITests: XCTestCase {
 		passwordTextField.tap()
 		sleep(1)
 		
-		UIPasteboard.general.string = ""
+		UIPasteboard.general.string = "xypVy2-gifdob-pyjsek"
 		passwordTextField.doubleTap()
 		app.menuItems["Paste"].tap()
 		if app.toolbars.buttons["Done"].exists {
@@ -59,25 +59,28 @@ class Image_FeedUITests: XCTestCase {
 		let firstCell = tablesQuery.cells.element(boundBy: 0)
 		XCTAssertTrue(firstCell.waitForExistence(timeout: 15), "Лента не загрузилась")
 		
-		let likeButton = firstCell.buttons["like button off"]
-		XCTAssertTrue(likeButton.waitForExistence(timeout: 10))
-		likeButton.tap()
+		tablesQuery.element.swipeUp()
+		sleep(2)
 		
-		let likeButtonOn = firstCell.buttons["like button on"]
-		XCTAssertTrue(likeButtonOn.waitForExistence(timeout: 15))
+		let cellToLike = tablesQuery.cells.element(boundBy: 0)
+		let likeButtonOff = cellToLike.buttons["like button off"]
+		XCTAssertTrue(likeButtonOff.waitForExistence(timeout: 10), "Кнопка лайка (off) не найдена")
+		likeButtonOff.tap()
+		
+		let likeButtonOn = cellToLike.buttons["like button on"]
+		XCTAssertTrue(likeButtonOn.waitForExistence(timeout: 10), "Лайк не включился")
 		likeButtonOn.tap()
-		XCTAssertTrue(likeButton.waitForExistence(timeout: 15))
 		
-		firstCell.tap()
+		XCTAssertTrue(likeButtonOff.waitForExistence(timeout: 10), "Лайк не выключился")
+		
+		cellToLike.tap()
 		
 		let fullImage = app.images.element
-		XCTAssertTrue(fullImage.waitForExistence(timeout: 35), "Фото не загрузилось")
+		XCTAssertTrue(fullImage.waitForExistence(timeout: 20), "Экран Single Image не открылся")
 		
 		fullImage.pinch(withScale: 3, velocity: 1)
-		sleep(1)
 		
-		fullImage.pinch(withScale: 0.5, velocity:-0.5)
-		sleep(1)
+		fullImage.pinch(withScale: 0.5, velocity: -1)
 		
 		let navBackButton = app.buttons["nav back button white"].firstMatch
 		XCTAssertTrue(navBackButton.waitForExistence(timeout: 10), "Кнопка назад не найдена")
