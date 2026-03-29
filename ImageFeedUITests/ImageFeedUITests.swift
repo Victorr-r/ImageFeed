@@ -22,7 +22,7 @@ class Image_FeedUITests: XCTestCase {
 		let loginTextField = webView.descendants(matching: .textField).firstMatch
 		XCTAssertTrue(loginTextField.waitForExistence(timeout: 20), "Поле логина не появилось")
 		loginTextField.tap()
-		loginTextField.typeText("viktorrr398@gmail.com")
+		loginTextField.typeText("")
 		
 		if app.toolbars.buttons["Done"].exists {
 			app.toolbars.buttons["Done"].tap()
@@ -35,7 +35,7 @@ class Image_FeedUITests: XCTestCase {
 		passwordTextField.tap()
 		sleep(1)
 		
-		UIPasteboard.general.string = "xypVy2-gifdob-pyjsek"
+		UIPasteboard.general.string = ""
 		passwordTextField.doubleTap()
 		app.menuItems["Paste"].tap()
 		if app.toolbars.buttons["Done"].exists {
