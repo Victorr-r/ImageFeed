@@ -19,7 +19,7 @@ final class SplashViewController: UIViewController {
 	// MARK: - Lifecycle
 	override func viewDidLoad() {
 		super.viewDidLoad()
-
+		
 		view.backgroundColor = .ypBlack
 		setupUI()
 	}
@@ -51,23 +51,24 @@ final class SplashViewController: UIViewController {
 			splashImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 			splashImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
 			splashImageView.widthAnchor.constraint(equalToConstant: 75),
-				  splashImageView.heightAnchor.constraint(equalToConstant: 78)
+			splashImageView.heightAnchor.constraint(equalToConstant: 78)
 		])
 	}
 	
 	private func showAuthenticationScreen() {
 		let storyboard = UIStoryboard(name: "Main", bundle: .main)
-		
-		guard let authViewController = storyboard.instantiateViewController(
-			withIdentifier: "AuthViewController"
-		) as? AuthViewController else {
-			assertionFailure("Failed to instantiate AuthViewController")
+		guard let navigationController = storyboard.instantiateViewController(
+			withIdentifier: "AuthNavigationController"
+		) as? UINavigationController else {
+			fatalError("ОШИБКА: Xcode не нашел AuthNavigationController в Storyboard!")
+		}
+		guard let authViewController = navigationController.viewControllers.first as? AuthViewController else {
+			assertionFailure("Ошибка: Проверьте Storyboard ID 'AuthNavigationController' у Navigation Controller")
 			return
 		}
-		
 		authViewController.delegate = self
-		authViewController.modalPresentationStyle = .fullScreen
-		present(authViewController, animated: true)
+		navigationController.modalPresentationStyle = .fullScreen
+		present(navigationController, animated: true)
 	}
 }
 // MARK: - Navigation Logic
@@ -102,11 +103,9 @@ private extension SplashViewController {
 			switch result {
 			case .success(let profile):
 				ProfileImageService.shared.fetchProfileImageURL(username: profile.username) { _ in }
-				UIBlockingProgressHUD.dismiss()
 				self.switchToTabBarController()
 				
 			case .failure(let error):
-				
 				print("[SplashViewController]: ProfileService Error - \(error.localizedDescription)")
 				self.showErrorAlert()
 				
@@ -130,7 +129,9 @@ private extension SplashViewController {
 extension SplashViewController: AuthViewControllerDelegate {
 	func didAuthenticate(_ vc: AuthViewController) {
 		vc.dismiss(animated: true) { [weak self] in
-			guard let self, let token = self.storage.token else { return }
+			guard let self else { return }
+			
+			guard let token = self.storage.token else { return }
 			self.fetchProfile(token)
 		}
 	}

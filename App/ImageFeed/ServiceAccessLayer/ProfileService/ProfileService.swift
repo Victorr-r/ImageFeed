@@ -26,8 +26,16 @@ struct Profile {
 		self.loginName = "@\(result.username)"
 		self.bio = result.bio
 		
-		let components = [result.firstName, result.lastName].compactMap { $0 }
-		self.name = components.joined(separator: " ")
+		let fName = result.firstName ?? ""
+		let lName = result.lastName ?? ""
+		
+		let fullName = "\(fName) \(lName)".trimmingCharacters(in: .whitespaces)
+		
+		if fullName.isEmpty {
+			self.name = "Victor Vorobyov"
+		} else {
+			self.name = fullName
+		}
 	}
 }
 
@@ -44,7 +52,7 @@ final class ProfileService {
 	
 	// MARK: - Public Methods
 	func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
-		if task != nil { return } 
+		if task != nil { return }
 		
 		guard let request = makeProfileRequest(token: token) else {
 			completion(.failure(NetworkError.invalidRequest))
@@ -52,21 +60,21 @@ final class ProfileService {
 		}
 		
 		let task = urlSession.objectTask(for: request) { [weak self] (result: Result<ProfileResult, Error>) in
-		guard let self else { return }
+			guard let self else { return }
 			self.task = nil
+			
+			switch result {
+			case .success(let profileResult):
+				let profile = Profile(from: profileResult)
+				self.profile = profile
 				
-				switch result {
-							case .success(let profileResult):
-								let profile = Profile(from: profileResult)
-								self.profile = profile
-								
-								completion(.success(profile))
-								
-							case .failure(let error):
-					print("[ProfileService]: ProfileError - \(error.localizedDescription)")
-								completion(.failure(error))
-							}
-						}
+				completion(.success(profile))
+				
+			case .failure(let error):
+				print("[ProfileService]: ProfileError - \(error.localizedDescription)")
+				completion(.failure(error))
+			}
+		}
 		
 		self.task = task
 		task.resume()

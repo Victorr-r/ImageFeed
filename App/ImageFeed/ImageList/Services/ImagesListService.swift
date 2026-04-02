@@ -20,6 +20,10 @@ final class ImagesListService {
 		assert(Thread.isMainThread)
 		if task != nil { return }
 		
+		if CommandLine.arguments.contains("testMode") && !photos.isEmpty {
+			return
+		}
+		
 		let nextPage = (lastLoadedPage ?? 0) + 1
 		
 		guard let request = makeNextPageRequest(page: nextPage) else { return }
