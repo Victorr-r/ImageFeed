@@ -1,6 +1,6 @@
 import XCTest
 
-class Image_FeedUITests: XCTestCase {
+final class Image_FeedUITests: XCTestCase {
 	private var app: XCUIApplication!
 	
 	override func setUpWithError() throws {
@@ -11,10 +11,12 @@ class Image_FeedUITests: XCTestCase {
 	}
 	
 	func testAuth() throws {
+		// Given
 		let authButton = app.buttons["Authenticate"]
 		XCTAssertTrue(authButton.waitForExistence(timeout: 10), "Кнопка не найдена!")
-		authButton.tap()
 		
+		// When
+		authButton.tap()
 		
 		let webView = app.webViews["UnsplashWebView"]
 		XCTAssertTrue(webView.waitForExistence(timeout: 15), "WebView не появилось")
@@ -48,6 +50,7 @@ class Image_FeedUITests: XCTestCase {
 		
 		webView.buttons["Login"].tap()
 		
+		// Then
 		let tablesQuery = app.tables
 		let cell = tablesQuery.children(matching: .cell).element(boundBy: 0)
 		
@@ -55,10 +58,12 @@ class Image_FeedUITests: XCTestCase {
 	}
 	
 	func testFeed() throws {
+		// Given
 		let tablesQuery = app.tables
 		let firstCell = tablesQuery.cells.element(boundBy: 0)
 		XCTAssertTrue(firstCell.waitForExistence(timeout: 15), "Лента не загрузилась")
 		
+		// When
 		tablesQuery.element.swipeUp()
 		sleep(2)
 		
@@ -67,10 +72,12 @@ class Image_FeedUITests: XCTestCase {
 		XCTAssertTrue(likeButtonOff.waitForExistence(timeout: 10), "Кнопка лайка (off) не найдена")
 		likeButtonOff.tap()
 		
+		// Then
 		let likeButtonOn = cellToLike.buttons["like button on"]
 		XCTAssertTrue(likeButtonOn.waitForExistence(timeout: 10), "Лайк не включился")
-		likeButtonOn.tap()
 		
+		// When (продолжаем действие — переход на экран и обратно)
+		likeButtonOn.tap()
 		XCTAssertTrue(likeButtonOff.waitForExistence(timeout: 10), "Лайк не выключился")
 		
 		cellToLike.tap()
@@ -86,16 +93,20 @@ class Image_FeedUITests: XCTestCase {
 		XCTAssertTrue(navBackButton.waitForExistence(timeout: 10), "Кнопка назад не найдена")
 		navBackButton.tap()
 		
+		// Then
 		XCTAssertTrue(tablesQuery.element.waitForExistence(timeout: 10))
 	}
 	
 	func testProfile() throws {
+		// Given
 		sleep(5)
-		
 		let profileTab = app.tabBars.buttons.element(boundBy: 1)
 		XCTAssertTrue(profileTab.waitForExistence(timeout: 10))
+		
+		// When (Действие: переходим в профиль)
 		profileTab.tap()
 		
+		// Then (Проверка: сверяем имя и логин)
 		let nameLabel = app.staticTexts["Name Label"]
 		let loginLabel = app.staticTexts["Login Label"]
 		
@@ -105,6 +116,7 @@ class Image_FeedUITests: XCTestCase {
 		XCTAssertTrue(loginLabel.exists)
 		XCTAssertEqual(loginLabel.label, "@viktorrr398")
 		
+		// When (Действие: логаут)
 		let logoutButton = app.buttons["logout button"]
 		XCTAssertTrue(logoutButton.exists)
 		logoutButton.tap()
@@ -113,6 +125,7 @@ class Image_FeedUITests: XCTestCase {
 		XCTAssertTrue(alert.waitForExistence(timeout: 5))
 		alert.buttons["Да"].tap()
 		
+		// Then (Проверка: вернулись ли мы на экран авторизации)
 		let authButton = app.buttons["Authenticate"]
 		XCTAssertTrue(authButton.waitForExistence(timeout: 10), "Не вернулись на экран Auth")
 	}

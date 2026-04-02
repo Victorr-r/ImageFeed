@@ -4,6 +4,7 @@ import Foundation
 protocol AuthHelperProtocol {
 	func authRequest() -> URLRequest?
 	func code(from url: URL) -> String?
+	func authURL() -> URL? 
 }
 
 // MARK: - AuthHelper
@@ -13,7 +14,7 @@ final class AuthHelper: AuthHelperProtocol {
 	let configuration: AuthConfiguration
 	
 	// MARK: - Initializer
-	init(configuration: AuthConfiguration = .standard) {
+	init(configuration: AuthConfiguration = Constants.standard) {
 		self.configuration = configuration
 	}
 	
@@ -52,18 +53,3 @@ final class AuthHelper: AuthHelperProtocol {
 		return urlComponents.url
 	}
 }
-
-// MARK: - AuthConfiguration Extension
-extension AuthConfiguration {
-	static var standard: AuthConfiguration {
-		return AuthConfiguration(
-			accessKey: Constants.accessKey,
-			secretKey: Constants.secretKey,
-			redirectURI: Constants.redirectURI,
-			accessScope: Constants.accessScope,
-			authURLString: Constants.unsplashAuthorizeURLString,
-			defaultBaseURLString: Constants.defaultBaseURLString
-		)
-	}
-}
-

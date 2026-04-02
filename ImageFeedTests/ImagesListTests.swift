@@ -3,23 +3,48 @@ import XCTest
 
 final class ImagesListTests: XCTestCase {
 	
-	@MainActor
-	func testViewControllerCallsViewDidLoad() {
+	// MARK: - Private Properties
+	private var viewController: ImageListViewController!
+	private var presenterSpy: ImagesListPresenterSpy!
+	
+	// MARK: - Setup
+	override func setUp() async throws {
+		try await super.setUp()
 		
-		let storyboard = UIStoryboard(name: "Main", bundle: nil)
-		
-		guard let viewController = storyboard.instantiateViewController(
-			withIdentifier: "ImagesListViewController"
-		) as? ImageListViewController else {
-			XCTFail("Could not instantiate ImageListViewController")
-			return
+		let controller = try await MainActor.run {
+			let storyboard = UIStoryboard(name: "Main", bundle: nil)
+			let vc = storyboard.instantiateViewController(withIdentifier: "ImageListViewController") as? ImageListViewController
+			
+			return try XCTUnwrap(vc, "Не удалось инициализировать ImageListViewController из Storyboard")
 		}
 		
-		let presenterSpy = ImagesListPresenterSpy()
-		viewController.configure(presenterSpy)
+		let spy = await MainActor.run { ImagesListPresenterSpy() }
 		
+		await MainActor.run {
+			controller.configure(spy)
+			spy.view = controller
+		}
+		
+		self.viewController = controller
+		self.presenterSpy = spy
+	}
+	
+	override func tearDown() {
+		viewController = nil
+		presenterSpy = nil
+		super.tearDown()
+	}
+	
+	// MARK: - Tests
+	
+	@MainActor
+	func testViewDidLoad_callsPresenterViewDidLoad() {
+		// Given: всё окружение настроено в setUp()
+		
+		// When: обращаемся к view, что триггерит viewDidLoad контроллера
 		_ = viewController.view
 		
-		XCTAssertTrue(presenterSpy.viewDidLoadCalled)
+		// Then: проверяем, что контроллер передал вызов в презентер
+		XCTAssertTrue(presenterSpy.viewDidLoadCalled, "Метод viewDidLoad в презентере должен быть вызван")
 	}
 }

@@ -32,6 +32,7 @@
 
 /* Begin PBXFileReference section */
 		C517C5942F2A5AB9002659C2 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		C522C6AA2F7E9EA5007F158F /* ImageFeed.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = ImageFeed.xctestplan; sourceTree = "<group>"; };
 		C52576572F73018800F3DB8D /* ImageFeedUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageFeedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5AAF5632F06A15300354FA3 /* ImageFeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageFeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5ED3ADF2F704F890056A642 /* ImageFeedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImageFeedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -116,6 +117,7 @@
 		C5AAF55A2F06A15300354FA3 = {
 			isa = PBXGroup;
 			children = (
+				C522C6AA2F7E9EA5007F158F /* ImageFeed.xctestplan */,
 				C53B4E492F13B03B003437E1 /* App */,
 				C5ED3AE02F704F890056A642 /* ImageFeedTests */,
 				C52576582F73018800F3DB8D /* ImageFeedUITests */,

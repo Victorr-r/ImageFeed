@@ -1,66 +1,102 @@
 import XCTest
-import Foundation
 @testable import ImageFeed
 
 @MainActor
 final class WebViewTests: XCTestCase {
 	
+	// MARK: - Properties
+	private var presenter: WebViewPresenter!
+	private var viewControllerSpy: WebViewViewControllerSpy!
+	private var authHelper: AuthHelperProtocol!
+	
+	// MARK: - Lifecycle
+	
+	override func setUp() {
+		super.setUp()
+		
+		// Given
+		let configuration = Constants.standard
+		let helper = AuthHelper(configuration: configuration)
+		let webPresenter = WebViewPresenter(authHelper: helper)
+		let spy = WebViewViewControllerSpy()
+		
+		webPresenter.view = spy
+		spy.presenter = webPresenter
+		
+		// Сохраняем в свойства класса
+		self.authHelper = helper
+		self.presenter = webPresenter
+		self.viewControllerSpy = spy
+	}
+	
+	override func tearDown() {
+		presenter = nil
+		viewControllerSpy = nil
+		authHelper = nil
+		super.tearDown()
+	}
+	
+	// MARK: - Tests
+	
 	func testViewControllerCallsViewDidLoad() {
+		// Given
 		let storyboard = UIStoryboard(name: "Main", bundle: nil)
-		let viewController = storyboard.instantiateViewController(withIdentifier: "WebViewViewController") as! WebViewViewController
-		let presenter = WebViewPresenterSpy()
-		viewController.presenter = presenter
-		presenter.view = viewController
+		let viewController = storyboard.instantiateViewController(
+			withIdentifier: "WebViewViewController"
+		) as! WebViewViewController
+		
+		let presenterSpy = WebViewPresenterSpy()
+		viewController.presenter = presenterSpy
+		presenterSpy.view = viewController
+		
+		// When
 		_ = viewController.view
 		
-		XCTAssertTrue(presenter.viewDidLoadCalled)
+		// Then
+		XCTAssertTrue(presenterSpy.viewDidLoadCalled)
 	}
 	
-	func testPresenterCallsLoadRequest() async {
-		let viewController = WebViewViewControllerSpy()
-		let authHelper = await MainActor.run {AuthHelper()}
-		let presenter = WebViewPresenter(authHelper: authHelper)
+	func testPresenterCallsLoadRequest() {
+		// Given: setup уже выполнен в setUp()
 		
-		viewController.presenter = presenter
-		presenter.view = viewController
-		
+		// When
 		presenter.viewDidLoad()
 		
-		XCTAssertTrue(viewController.loadCalled)
+		// Then
+		XCTAssertTrue(viewControllerSpy.loadCalled)
 	}
 	
-	func testProgressVisibleWhenLessThanOne() async {
-		let authHelper = await MainActor.run { AuthHelper()}
-		let presenter = WebViewPresenter(authHelper: authHelper)
+	func testProgressVisibleWhenLessThanOne() {
+		// Given
 		let progress: Float = 0.6
 		
-		let shouldHideProgress = presenter.shouldHideProgress(for: progress)
+		// When
+		let shouldHide = presenter.shouldHideProgress(for: progress)
 		
-		XCTAssertFalse(shouldHideProgress)
+		// Then
+		XCTAssertFalse(shouldHide)
 	}
 	
-	func testProgressHiddenWhenOne() async {
-		let authHelper = await MainActor.run { AuthHelper()}
-		let presenter = WebViewPresenter(authHelper: authHelper)
+	func testProgressHiddenWhenOne() {
+		// Given
 		let progress: Float = 1.0
 		
-		let shouldHideProgress = presenter.shouldHideProgress(for: progress)
+		// When
+		let shouldHide = presenter.shouldHideProgress(for: progress)
 		
-		XCTAssertTrue(shouldHideProgress)
+		// Then
+		XCTAssertTrue(shouldHide)
 	}
 	
-	func testAuthHelperAuthURL() async {
+	func testAuthHelperAuthURL() throws {
+		// Given
+		let configuration = Constants.standard
 		
-		let configuration = AuthConfiguration.standard
-		let authHelper = await MainActor.run { AuthHelper(configuration: configuration)}
+		// When
+		let url = try XCTUnwrap(authHelper.authURL())
+		let urlString = url.absoluteString
 		
-		let url = authHelper.authURL()
-		
-		guard let urlString = url?.absoluteString else {
-			XCTFail("Auth URL is nil")
-			return
-		}
-		
+		// Then
 		XCTAssertTrue(urlString.contains(configuration.authURLString))
 		XCTAssertTrue(urlString.contains(configuration.accessKey))
 		XCTAssertTrue(urlString.contains(configuration.redirectURI))
@@ -68,14 +104,16 @@ final class WebViewTests: XCTestCase {
 		XCTAssertTrue(urlString.contains(configuration.accessScope))
 	}
 	
-	func testCodeFromURL() async {
-		var urlComponents = URLComponents(string: "https://unsplash.com/oauth/authorize/native")!
-		urlComponents.queryItems = [URLQueryItem(name: "code", value: "test code")]
-		let url = urlComponents.url!
-		let authHelper = await MainActor.run { AuthHelper()}
+	func testCodeFromURL() {
+		// Given
+		var components = URLComponents(string: "https://unsplash.com/oauth/authorize/native")!
+		components.queryItems = [URLQueryItem(name: "code", value: "test code")]
+		let url = components.url!
 		
+		// When
 		let code = authHelper.code(from: url)
 		
-		XCTAssertEqual(code,"test code")
+		// Then
+		XCTAssertEqual(code, "test code")
 	}
 }
